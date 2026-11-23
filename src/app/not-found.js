@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function NotFound(){return <main className="auth-wrap"><section className="panel auth-card" style={{textAlign:'center'}}><div className="brand">link<span>usaha</span></div><h1 style={{fontSize:30,marginTop:28}}>Website tidak ditemukan</h1><p className="muted">Link mungkin salah, atau website usaha ini belum dipublikasikan.</p><Link className="btn" href="/">Kembali ke LinkUsaha</Link></section></main>;}
