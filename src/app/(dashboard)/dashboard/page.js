@@ -1,19 +1,396 @@
+
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { saveBusiness, updatePublication } from '@/lib/actions/business';
-import { formatRupiah } from '@/lib/utils/format';
+import { DashboardLinkActions } from '@/components/dashboard/dashboard-link-actions';
+
 export const metadata = { title: 'Dashboard' };
-const themes = [{id:'ocean-blue',name:'Ocean Blue',color:'#2879c7'},{id:'fresh-green',name:'Fresh Green',color:'#16845b'},{id:'warm-orange',name:'Warm Orange',color:'#e78b35'},{id:'soft-purple',name:'Soft Purple',color:'#8766c5'},{id:'rose',name:'Rose',color:'#d65d83'}];
+
+const themes = [
+  { id: 'ocean-blue', name: 'Ocean Blue', color: '#2879c7' },
+  { id: 'fresh-green', name: 'Fresh Green', color: '#16845b' },
+  { id: 'warm-orange', name: 'Warm Orange', color: '#e78b35' },
+  { id: 'soft-purple', name: 'Soft Purple', color: '#8766c5' },
+  { id: 'rose', name: 'Rose', color: '#d65d83' },
+];
+
 export default async function DashboardPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) redirect('/login');
-  const [{ data: business }, { data: profile }] = await Promise.all([supabase.from('businesses').select('*').eq('owner_id', user.id).maybeSingle(),supabase.from('profiles').select('role').eq('id',user.id).maybeSingle()]);
-  if (!business && ['admin','super_admin'].includes(profile?.role)) redirect('/dashboard/admin');
-  if (!business) return <><div className="dash-top"><div><div className="eyebrow">Selamat datang</div><h1 style={{fontSize:30,margin:'7px 0'}}>Buat website usahamu</h1><p className="muted">Mulai dengan informasi dasar. Detail lainnya bisa dilengkapi nanti.</p></div></div>{params?.error && <div className="notice error">{params.error}</div>}<section className="panel" style={{padding:24,maxWidth:760}}><form action={saveBusiness} style={{display:'grid',gap:16}}><div className="field"><label htmlFor="name">Nama usaha *</label><input id="name" name="name" required minLength="2" placeholder="Contoh: Dapur Nusa"/></div><div className="field"><label htmlFor="slug">Alamat website *</label><div style={{display:'flex',alignItems:'center',gap:8}}><span className="muted">linkusaha.id/</span><input id="slug" name="slug" placeholder="dapur-nusa" minLength="3"/></div><small className="muted">Boleh dikosongkan untuk dibuat otomatis dari nama usaha.</small></div><div className="field"><label htmlFor="category">Kategori usaha</label><select id="category" name="category"><option>Makanan & Minuman</option><option>Fashion</option><option>Toko Kelontong</option><option>Kue & Katering</option><option>Kerajinan</option><option>Jasa</option><option>Lainnya</option></select></div><div className="field"><label htmlFor="description">Deskripsi singkat</label><textarea id="description" name="description" placeholder="Ceritakan sedikit tentang usahamu"/></div><div className="field"><label htmlFor="whatsapp_number">Nomor WhatsApp *</label><input id="whatsapp_number" name="whatsapp_number" type="tel" required placeholder="08xxxxxxxxxx"/><small className="muted">Gunakan nomor yang bisa menerima pesan WhatsApp.</small></div><div className="field"><label htmlFor="opening_hours">Jam operasional (opsional)</label><input id="opening_hours" name="opening_hours" placeholder="Senin–Sabtu, 09.00–17.00"/></div><div className="field"><label htmlFor="additional_contact">Kontak tambahan (opsional)</label><input id="additional_contact" name="additional_contact" placeholder="Telepon atau informasi kontak lain"/></div><div className="field"><label htmlFor="logo">Logo usaha (opsional · JPG/PNG/WebP maks. 5 MB)</label><input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/webp"/></div><div className="field"><label htmlFor="cover">Foto sampul (opsional · JPG/PNG/WebP maks. 5 MB)</label><input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp"/></div><div><label style={{fontSize:14,fontWeight:700,display:'block',marginBottom:10}}>Warna website</label><div style={{display:'flex',gap:12,flexWrap:'wrap'}}>{themes.map((theme,index)=><label key={theme.id} style={{display:'flex',alignItems:'center',gap:6,fontSize:13}}><input type="radio" name="theme" value={theme.id} defaultChecked={index===0}/><span style={{width:15,height:15,borderRadius:50,background:theme.color}}/>{theme.name}</label>)}</div></div><button className="btn" style={{justifySelf:'start'}}>Simpan dan lanjutkan</button></form></section></>;
-  const [{ count: productCount }, { data: settings }] = await Promise.all([supabase.from('products').select('*',{count:'exact',head:true}).eq('business_id',business.id),supabase.from('business_settings').select('cart_enabled').eq('business_id',business.id).maybeSingle()]);
+
+  const [{ data: business }, { data: profile }] = await Promise.all([
+    supabase
+      .from('businesses')
+      .select('*')
+      .eq('owner_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ]);
+
+  if (!business && ['admin', 'super_admin'].includes(profile?.role)) {
+    redirect('/dashboard/admin');
+  }
+
+  // ONBOARDING: pengguna belum memiliki bisnis
+  if (!business) {
+    return (
+      <div className="dashboard-page">
+        <div className="dashboard-welcome">
+          <div className="eyebrow">SELAMAT DATANG DI LINKUSAHA</div>
+          <h1>Yuk, buat website usahamu! 👋</h1>
+          <p>
+            Isi informasi dasar usaha kamu. Tidak perlu langsung sempurna,
+            detail lainnya bisa dilengkapi nanti.
+          </p>
+        </div>
+
+        {params?.error && (
+          <div className="notice error dashboard-notice">
+            {params.error}
+          </div>
+        )}
+
+        <section className="panel dashboard-onboarding">
+          <div className="dashboard-section-heading">
+            <span className="dashboard-step">LANGKAH 1</span>
+            <h2>Kenalan dengan usahamu</h2>
+            <p>Informasi ini akan ditampilkan di website usaha kamu.</p>
+          </div>
+
+          <form action={saveBusiness} className="dashboard-form">
+            <div className="dashboard-form-grid">
+              <div className="field">
+                <label htmlFor="name">Nama usaha *</label>
+                <input
+                  id="name"
+                  name="name"
+                  required
+                  minLength="2"
+                  placeholder="Contoh: Dapur Bu Sri"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="slug">Alamat website</label>
+                <div className="dashboard-slug-input">
+                  <span>linkusaha.vercel.app/</span>
+                  <input
+                    id="slug"
+                    name="slug"
+                    placeholder="dapur-bu-sri"
+                    minLength="3"
+                  />
+                </div>
+                <small className="muted">
+                  Boleh dikosongkan. Link akan dibuat otomatis dari nama usaha.
+                </small>
+              </div>
+
+              <div className="field">
+                <label htmlFor="category">Kategori usaha</label>
+                <select id="category" name="category">
+                  <option>Makanan & Minuman</option>
+                  <option>Fashion</option>
+                  <option>Toko Kelontong</option>
+                  <option>Kue & Katering</option>
+                  <option>Kerajinan</option>
+                  <option>Jasa</option>
+                  <option>Lainnya</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="whatsapp_number">Nomor WhatsApp *</label>
+                <input
+                  id="whatsapp_number"
+                  name="whatsapp_number"
+                  type="tel"
+                  required
+                  placeholder="08xxxxxxxxxx"
+                />
+                <small className="muted">
+                  Gunakan nomor WhatsApp yang aktif.
+                </small>
+              </div>
+
+              <div className="field dashboard-field-full">
+                <label htmlFor="description">Tentang usaha</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  placeholder="Contoh: Menyediakan aneka makanan rumahan yang dibuat segar setiap hari."
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="opening_hours">Jam operasional</label>
+                <input
+                  id="opening_hours"
+                  name="opening_hours"
+                  placeholder="Senin–Sabtu, 09.00–17.00"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="additional_contact">Kontak tambahan</label>
+                <input
+                  id="additional_contact"
+                  name="additional_contact"
+                  placeholder="Telepon atau informasi kontak lain"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="logo">Logo usaha</label>
+                <input
+                  id="logo"
+                  name="logo"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                />
+                <small className="muted">JPG, PNG, atau WebP. Maksimal 5 MB.</small>
+              </div>
+
+              <div className="field">
+                <label htmlFor="cover">Foto sampul</label>
+                <input
+                  id="cover"
+                  name="cover"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                />
+                <small className="muted">Pilih foto yang menggambarkan usahamu.</small>
+              </div>
+            </div>
+
+            <div className="dashboard-theme-field">
+              <div>
+                <strong>Pilih warna website</strong>
+                <p className="muted">Kamu bisa mengubahnya nanti.</p>
+              </div>
+
+              <div className="dashboard-theme-options">
+                {themes.map((theme, index) => (
+                  <label key={theme.id} className="dashboard-theme-option">
+                    <input
+                      type="radio"
+                      name="theme"
+                      value={theme.id}
+                      defaultChecked={index === 0}
+                    />
+                    <span style={{ background: theme.color }} />
+                    {theme.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="dashboard-form-footer">
+              <p className="muted">
+                * Wajib diisi. Informasi lainnya bisa dilengkapi kemudian.
+              </p>
+              <button className="btn" type="submit">
+                Buat website usaha →
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    );
+  }
+
+  // DASHBOARD: pengguna sudah memiliki bisnis
+  const [{ count: productCount }, { data: settings }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', business.id),
+    supabase
+      .from('business_settings')
+      .select('cart_enabled')
+      .eq('business_id', business.id)
+      .maybeSingle(),
+  ]);
+
   const published = business.publication_status === 'published';
-  return <><div className="dash-top"><div><div className="eyebrow">Ringkasan usaha</div><h1 style={{fontSize:30,margin:'7px 0'}}>{business.name}</h1><p className="muted" style={{margin:0}}>Kelola website dan informasi usahamu di sini.</p></div><Link href="/dashboard/pengaturan" className="btn secondary">Pengaturan</Link></div>{params?.error && <div className="notice error" style={{marginBottom:16}}>{params.error}</div>}{params?.message && <div className="notice success" style={{marginBottom:16}}>{params.message}</div>}<div className="grid-auto" style={{marginBottom:22}}><div className="panel stat"><span className="muted" style={{fontSize:13}}>Status website</span><strong style={{fontSize:20,color:published?'var(--green)':'#a66b19'}}>{published?'Aktif':'Belum aktif'}</strong><span className="muted" style={{fontSize:12}}>{published?'Website bisa dilihat publik':'Publikasikan agar pelanggan bisa melihat'}</span></div><div className="panel stat"><span className="muted" style={{fontSize:13}}>Jumlah produk</span><strong>{productCount || 0}</strong><span className="muted" style={{fontSize:12}}>Produk dalam katalog</span></div><div className="panel stat"><span className="muted" style={{fontSize:13}}>Sistem keranjang</span><strong style={{fontSize:20}}>{settings?.cart_enabled?'Aktif':'Nonaktif'}</strong><span className="muted" style={{fontSize:12}}>Pesanan melalui WhatsApp</span></div></div><section className="panel" style={{padding:22,marginBottom:18}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><div className="eyebrow">Link website kamu</div><h2 style={{fontSize:20,margin:'7px 0'}}>{process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/{business.slug}</h2><p className="muted" style={{margin:0,fontSize:13}}>Bagikan link ini ke pelangganmu.</p></div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}><Link className="btn secondary" href={`/${business.slug}`} target="_blank">Buka website ↗</Link><Link className="btn outline" href="/dashboard/produk">Kelola produk</Link></div></div></section><section className="panel" style={{padding:22}}><h2 style={{fontSize:20,marginTop:0}}>Publikasi website</h2><p className="muted" style={{fontSize:14}}>Website hanya bisa diakses pelanggan jika statusnya aktif.</p><div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}><span className={`notice ${published?'success':''}`}>{business.publication_status}</span><form action={updatePublication}><input type="hidden" name="status" value={published?'unpublished':'published'}/><button className="btn" type="submit">{published?'Nonaktifkan website':'Publikasikan website'}</button></form></div></section><p className="muted" style={{fontSize:12,marginTop:18}}>Catatan: Harga dan ketersediaan katalog merupakan informasi awal. Konfirmasi pesanan tetap dilakukan langsung melalui WhatsApp.</p></>;
+  const appUrl = (
+    process.env.NEXT_PUBLIC_APP_URL || 'https://linkusaha.vercel.app'
+  ).replace(/\/+$/, '');
+  const websiteUrl = `${appUrl}/${business.slug}`;
+
+  return (
+    <div className="dashboard-page">
+      <div className="dashboard-welcome dashboard-welcome-existing">
+        <div>
+          <div className="eyebrow">BERANDA USAHA</div>
+          <h1>Halo, {business.name}! 👋</h1>
+          <p>Senang melihat usahamu berkembang. Apa yang ingin kamu kelola hari ini?</p>
+        </div>
+
+        <Link href="/dashboard/pengaturan" className="btn secondary dashboard-settings-button">
+          Pengaturan usaha
+        </Link>
+      </div>
+
+      {params?.error && (
+        <div className="notice error dashboard-notice">{params.error}</div>
+      )}
+
+      {params?.message && (
+        <div className="notice success dashboard-notice">{params.message}</div>
+      )}
+
+      {/* WEBSITE LINK */}
+      <section className="dashboard-website-card">
+        <div className="dashboard-website-top">
+          <div>
+            <span className="dashboard-card-label">WEBSITE USAHAMU</span>
+            <div className="dashboard-website-status">
+              <span className={`dashboard-status-dot ${published ? 'is-published' : ''}`} />
+              {published ? 'Website aktif dan bisa dikunjungi' : 'Website belum dipublikasikan'}
+            </div>
+          </div>
+          <span className={`dashboard-status-badge ${published ? 'published' : 'draft'}`}>
+            {published ? 'Aktif' : 'Draft'}
+          </span>
+        </div>
+
+        <div className="dashboard-website-url">{websiteUrl}</div>
+
+        <DashboardLinkActions url={websiteUrl} />
+
+        {!published && (
+          <p className="dashboard-website-hint">
+            Website kamu belum terlihat oleh pelanggan. Lengkapi informasi lalu publikasikan.
+          </p>
+        )}
+      </section>
+
+      {/* RINGKASAN */}
+      <div className="dashboard-section-title">
+        <div>
+          <h2>Ringkasan usahamu</h2>
+          <p>Informasi singkat tentang website kamu.</p>
+        </div>
+      </div>
+
+      <div className="dashboard-stats">
+        <div className="panel dashboard-stat-card">
+          <div className="dashboard-stat-icon green">↗</div>
+          <span>Status website</span>
+          <strong>{published ? 'Aktif' : 'Draft'}</strong>
+          <small>{published ? 'Bisa dilihat pelanggan' : 'Belum terlihat publik'}</small>
+        </div>
+
+        <div className="panel dashboard-stat-card">
+          <div className="dashboard-stat-icon blue">▦</div>
+          <span>Produk</span>
+          <strong>{productCount || 0}</strong>
+          <small>Produk dalam katalog</small>
+        </div>
+
+        <div className="panel dashboard-stat-card">
+          <div className="dashboard-stat-icon orange">🛒</div>
+          <span>Keranjang</span>
+          <strong>{settings?.cart_enabled ? 'Aktif' : 'Nonaktif'}</strong>
+          <small>Pesanan melalui WhatsApp</small>
+        </div>
+      </div>
+
+      {/* MENU UTAMA */}
+      <div className="dashboard-section-title">
+        <div>
+          <h2>Kelola usahamu</h2>
+          <p>Pilih bagian yang ingin kamu ubah.</p>
+        </div>
+      </div>
+
+      <div className="dashboard-manage-grid">
+        <Link href="/dashboard/produk" className="dashboard-manage-card">
+          <div className="dashboard-manage-icon green">▦</div>
+          <div>
+            <h3>Produk</h3>
+            <p>Tambah foto, nama, harga, dan deskripsi produk.</p>
+          </div>
+          <span className="dashboard-manage-arrow">→</span>
+        </Link>
+
+        <Link href="/dashboard/pengaturan" className="dashboard-manage-card">
+          <div className="dashboard-manage-icon blue">⌂</div>
+          <div>
+            <h3>Informasi usaha</h3>
+            <p>Ubah nama, alamat, WhatsApp, dan jam buka.</p>
+          </div>
+          <span className="dashboard-manage-arrow">→</span>
+        </Link>
+
+        <Link href="/dashboard/pengaturan" className="dashboard-manage-card">
+          <div className="dashboard-manage-icon purple">✦</div>
+          <div>
+            <h3>Tampilan website</h3>
+            <p>Atur warna dan informasi yang tampil di website.</p>
+          </div>
+          <span className="dashboard-manage-arrow">→</span>
+        </Link>
+
+        <Link href={`/${business.slug}`} target="_blank" className="dashboard-manage-card">
+          <div className="dashboard-manage-icon orange">◉</div>
+          <div>
+            <h3>Pratinjau website</h3>
+            <p>Lihat website sebagaimana pelanggan melihatnya.</p>
+          </div>
+          <span className="dashboard-manage-arrow">→</span>
+        </Link>
+      </div>
+
+      {/* PUBLIKASI */}
+      <section className="panel dashboard-publish-card">
+        <div className="dashboard-publish-copy">
+          <span className="dashboard-card-label">LANGKAH TERAKHIR</span>
+          <h2>{published ? 'Website kamu sudah online!' : 'Website siap dipublikasikan?'}</h2>
+          <p>
+            {published
+              ? 'Kamu bisa menonaktifkan website kapan saja melalui tombol di bawah.'
+              : 'Publikasikan website agar pelanggan bisa melihat produk dan menghubungimu melalui WhatsApp.'}
+          </p>
+        </div>
+
+        <div className="dashboard-publish-actions">
+          <span className={`notice ${published ? 'success' : ''}`}>
+            {published ? 'Status: Aktif' : 'Status: Belum aktif'}
+          </span>
+
+          <form action={updatePublication}>
+            <input
+              type="hidden"
+              name="status"
+              value={published ? 'unpublished' : 'published'}
+            />
+            <button className="btn" type="submit">
+              {published ? 'Nonaktifkan website' : 'Publikasikan website'}
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <div className="dashboard-help-note">
+        <strong>Butuh bantuan?</strong>
+        <span>
+          Pastikan harga dan ketersediaan produk selalu diperbarui.
+          Konfirmasi pesanan tetap dilakukan langsung melalui WhatsApp.
+        </span>
+      </div>
+    </div>
+  );
 }

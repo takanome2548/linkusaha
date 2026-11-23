@@ -365,6 +365,7 @@ export function StorefrontClient({
     }
   }
 
+  
   return (
     <div
       className="storefront"
@@ -385,13 +386,28 @@ export function StorefrontClient({
             {business.logo_url ? (
               <img
                 src={business.logo_url}
-                alt=""
+                alt={`Logo ${business.name}`}
                 className="store-header-logo"
               />
-            ) : null}
-
+            ) : (
+              <span className="store-brand-monogram">
+                {business.name?.trim()?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            )}
             <span>{business.name}</span>
           </a>
+
+          <nav className="store-nav" aria-label="Navigasi utama">
+            {liveProducts.length > 0 && (
+              <a href="#katalog">Produk</a>
+            )}
+            {business.description && (
+              <a href="#tentang">Tentang</a>
+            )}
+            {(business.address || business.google_maps_url) && (
+              <a href="#lokasi">Lokasi</a>
+            )}
+          </nav>
 
           <a
             href={whatsappUrl(
@@ -399,102 +415,115 @@ export function StorefrontClient({
               `Halo ${business.name}, saya ingin bertanya.`
             )}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="btn store-header-contact"
             style={{ background: theme.primary }}
           >
             <MessageCircle size={16} />
-            Hubungi kami
+            <span>Hubungi kami</span>
           </a>
         </div>
       </header>
 
-      {/* HERO */}
-      <section
-        className="store-hero"
-        style={{ background: theme.soft }}
-      >
-        <div
-          className={`container store-hero-grid ${
-            business.cover_url ? '' : 'store-hero-no-image'
-          }`}
+      <main>
+        {/* HERO */}
+        <section
+          className="store-hero"
+          style={{ background: theme.soft }}
         >
-          <div className="store-hero-content">
-            {business.logo_url && (
-              <img
-                src={business.logo_url}
-                alt={`Logo ${business.name}`}
-                className="store-hero-logo"
-              />
-            )}
+          <div className="container store-hero-grid">
+            <div className="store-hero-content">
+              {business.category && (
+                <div
+                  className="store-hero-category"
+                  style={{ color: theme.text }}
+                >
+                  <span style={{ background: theme.primary }} />
+                  {business.category}
+                </div>
+              )}
 
-            {business.category && (
-              <div
-                className="store-hero-category"
-                style={{ color: theme.text }}
-              >
-                <span
-                  style={{ background: theme.primary }}
-                />
-                {business.category}
-              </div>
-            )}
+              <h1 style={{ color: theme.text }}>
+                {business.name}
+              </h1>
 
-            <h1 style={{ color: theme.text }}>
-              {business.name}
-            </h1>
-
-            {business.description && (
               <p className="store-hero-description">
-                {business.description}
+                {business.description ||
+                  `Selamat datang di ${business.name}. Temukan produk dan layanan pilihan kami.`}
               </p>
-            )}
 
-            <div className="store-hero-actions">
-              <a
-                href="#katalog"
-                className="btn store-hero-primary"
-                style={{ background: theme.primary }}
-              >
-                <ShoppingBag size={17} />
-                Lihat produk
-              </a>
-
-              <a
-                href={whatsappUrl(
-                  business.whatsapp_number,
-                  `Halo ${business.name}, saya ingin bertanya.`
+              <div className="store-hero-actions">
+                {liveProducts.length > 0 && (
+                  <a
+                    href="#katalog"
+                    className="btn store-hero-primary"
+                    style={{ background: theme.primary }}
+                  >
+                    <ShoppingBag size={17} />
+                    Lihat produk
+                    <ArrowUpRight size={16} />
+                  </a>
                 )}
-                target="_blank"
-                rel="noreferrer"
-                className="btn store-hero-secondary"
-              >
-                <MessageCircle size={17} />
-                Hubungi kami
-              </a>
+
+                <a
+                  href={whatsappUrl(
+                    business.whatsapp_number,
+                    `Halo ${business.name}, saya ingin bertanya.`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn store-hero-secondary"
+                >
+                  <MessageCircle size={17} />
+                  Hubungi kami
+                </a>
+              </div>
+
+              <div className="store-hero-trust">
+                <span
+                  className="store-hero-trust-icon"
+                  style={{
+                    background: theme.primary,
+                  }}
+                >
+                  <CheckCircle2 size={15} />
+                </span>
+                Pemesanan mudah dan langsung melalui WhatsApp
+              </div>
             </div>
 
-            <div className="store-hero-trust">
-              <CheckCircle2
-                size={17}
-                style={{ color: theme.primary }}
-              />
-              Pemesanan mudah melalui WhatsApp
-            </div>
-          </div>
-
-          {business.cover_url && (
             <div className="store-hero-visual">
               <div className="store-hero-image">
-                <img
-                  src={business.cover_url}
-                  alt={`Sampul ${business.name}`}
-                />
+                {business.cover_url ? (
+                  <img
+                    src={business.cover_url}
+                    alt={`Sampul ${business.name}`}
+                    fetchPriority="high"
+                  />
+                ) : (
+                  <div
+                    className="store-hero-placeholder"
+                    style={{
+                      background: `linear-gradient(135deg, ${theme.primary}, ${theme.text})`,
+                    }}
+                  >
+                    {business.logo_url ? (
+                      <img
+                        src={business.logo_url}
+                        alt=""
+                      />
+                    ) : (
+                      <span>
+                        {business.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 <div className="store-hero-image-overlay" />
 
                 <div className="store-hero-image-caption">
-                  <span>SELAMAT DATANG</span>
+                  <span>SELAMAT DATANG DI</span>
                   <strong>{business.name}</strong>
                 </div>
               </div>
@@ -509,380 +538,441 @@ export function StorefrontClient({
                 >
                   <MessageCircle size={21} />
                 </div>
-
                 <div>
                   <strong>Pesan langsung</strong>
-                  <span>Melalui WhatsApp</span>
+                  <span>Praktis melalui WhatsApp</span>
                 </div>
-
                 <ArrowUpRight
-                  size={20}
+                  size={19}
                   className="store-hero-floating-arrow"
                 />
               </div>
-
-              {business.category && (
-                <div className="store-hero-category-badge">
-                  {business.category}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* PRODUCT CATALOG */}
-
-{/* BUSINESS BENEFITS */}
-<section className="store-benefits">
-  <div className="container store-benefits-grid">
-    <div className="store-benefit">
-      <div className="store-benefit-icon" style={{ background: theme.soft, color: theme.primary }}>
-        <ShoppingBag size={21} />
-      </div>
-      <div>
-        <strong>Produk pilihan</strong>
-        <span>Lihat berbagai produk dari {business.name}.</span>
-      </div>
-    </div>
-
-    <div className="store-benefit">
-      <div className="store-benefit-icon" style={{ background: theme.soft, color: theme.primary }}>
-        <MessageCircle size={21} />
-      </div>
-      <div>
-        <strong>Pemesanan mudah</strong>
-        <span>Hubungi kami langsung melalui WhatsApp.</span>
-      </div>
-    </div>
-
-    <div className="store-benefit">
-      <div className="store-benefit-icon" style={{ background: theme.soft, color: theme.primary }}>
-        <CheckCircle2 size={21} />
-      </div>
-      <div>
-        <strong>Informasi jelas</strong>
-        <span>Temukan informasi usaha dalam satu halaman.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-      {liveProducts.length > 0 && (
-        <section
-          id="katalog"
-          className="section store-catalog"
-        >
-          <div className="container">
-            <div className="store-catalog-heading">
-              <div>
-                <div
-                  className="eyebrow"
-                  style={{ color: theme.text }}
-                >
-                  KATALOG PRODUK
-                </div>
-
-                <h2>Produk yang mungkin kamu sukai</h2>
-
-               <p className="muted">
-  Jelajahi koleksi produk dari {business.name} dan temukan yang kamu butuhkan.
-</p>
-              </div>
-
-              <div
-                className="store-catalog-count"
-                style={{
-                  background: theme.soft,
-                  color: theme.text,
-                }}
-              >
-                {liveProducts.length} Produk
-              </div>
-            </div>
-
-            <div className="store-products">
-              {liveProducts.map((product) => (
-                <article
-                  key={product.id}
-                  className="panel store-product"
-                >
-                  <div className="store-product-image">
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div
-                        className="store-product-placeholder"
-                        style={{ background: theme.soft }}
-                      >
-                        <ShoppingBag
-                          size={38}
-                          style={{ color: theme.primary }}
-                        />
-                      </div>
-                    )}
-
-                    {!product.is_available ||
-                    !product.is_active ? (
-                      <span className="store-product-unavailable">
-                        Tidak tersedia
-                      </span>
-                    ) : (
-                      <span
-                        className="store-product-available"
-                        style={{ color: theme.primary }}
-                      >
-                        Tersedia
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="store-product-body">
-                    <div className="store-product-information">
-                      <h3 className="store-product-name">
-                        {product.name}
-                      </h3>
-
-                      <p className="store-product-description">
-                        {product.description || ' '}
-                      </p>
-                    </div>
-
-                    <div className="store-product-footer">
-                      <strong
-                        className="store-product-price"
-                        style={{ color: theme.text }}
-                      >
-                        {formatRupiah(product.price)}
-                      </strong>
-
-                      {!product.is_available ||
-                      !product.is_active ? (
-                        <span className="notice">
-                          Sedang tidak tersedia
-                        </span>
-                      ) : cartEnabled ? (
-                        <button
-                          className="btn store-product-button"
-                          style={{ background: theme.primary }}
-                          onClick={() => add(product)}
-                        >
-                          <Plus size={16} />
-                          Tambah ke keranjang
-                        </button>
-                      ) : (
-                        <button
-                          className="btn store-product-button"
-                          style={{ background: theme.primary }}
-                          disabled={directBusy === product.id}
-                          onClick={() => orderDirect(product)}
-                        >
-                          <MessageCircle size={16} />
-                          {directBusy === product.id
-                            ? 'Memeriksa produk...'
-                            : 'Pesan produk'}
-                        </button>
-                      )}
-
-                      {directErrors[product.id] && (
-                        <p
-                          className="notice error"
-                          role="alert"
-                        >
-                          {directErrors[product.id]}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              ))}
             </div>
           </div>
         </section>
-      )}
 
-      {/* BUSINESS INFORMATION */}
-      {(
-        business.address ||
-        business.opening_hours?.display ||
-        business.additional_contact ||
-        business.google_maps_url
-      ) && (
-        <section className="section store-information">
-          <div className="container">
-            <div className="store-information-inner">
+        {/* BENEFITS */}
+        <section className="store-benefits">
+          <div className="container store-benefits-grid">
+            <div className="store-benefit">
+              <div
+                className="store-benefit-icon"
+                style={{ background: theme.soft, color: theme.primary }}
+              >
+                <ShoppingBag size={21} />
+              </div>
               <div>
-                <div
+                <strong>Produk pilihan</strong>
+                <span>Temukan produk yang sesuai kebutuhanmu.</span>
+              </div>
+            </div>
+
+            <div className="store-benefit">
+              <div
+                className="store-benefit-icon"
+                style={{ background: theme.soft, color: theme.primary }}
+              >
+                <MessageCircle size={21} />
+              </div>
+              <div>
+                <strong>Pemesanan praktis</strong>
+                <span>Hubungi usaha langsung melalui WhatsApp.</span>
+              </div>
+            </div>
+
+            <div className="store-benefit">
+              <div
+                className="store-benefit-icon"
+                style={{ background: theme.soft, color: theme.primary }}
+              >
+                <CheckCircle2 size={21} />
+              </div>
+              <div>
+                <strong>Informasi transparan</strong>
+                <span>Lihat harga dan informasi usaha dengan mudah.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PRODUCT CATALOG */}
+        {liveProducts.length > 0 && (
+          <section
+            id="katalog"
+            className="store-catalog"
+          >
+            <div className="container">
+              <div className="store-section-heading">
+                <div>
+                  <span
+                    className="eyebrow"
+                    style={{ color: theme.text }}
+                  >
+                    PILIHAN UNTUKMU
+                  </span>
+                  <h2>Jelajahi produk kami</h2>
+                  <p>
+                    Temukan produk pilihan dari {business.name}.
+                  </p>
+                </div>
+
+                <span
+                  className="store-catalog-count"
+                  style={{
+                    background: theme.soft,
+                    color: theme.text,
+                  }}
+                >
+                  {liveProducts.length} Produk
+                </span>
+              </div>
+
+              <div className="store-products">
+                {liveProducts.map((product) => (
+                  <article
+                    key={product.id}
+                    className="store-product"
+                  >
+                    <div className="store-product-image">
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          className="store-product-placeholder"
+                          style={{ background: theme.soft }}
+                        >
+                          <ShoppingBag
+                            size={38}
+                            style={{ color: theme.primary }}
+                          />
+                        </div>
+                      )}
+
+                      {!product.is_available || !product.is_active ? (
+                        <span className="store-product-unavailable">
+                          Tidak tersedia
+                        </span>
+                      ) : (
+                        <span className="store-product-available">
+                          <span
+                            style={{ background: theme.primary }}
+                          />
+                          Tersedia
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="store-product-body">
+                      <div className="store-product-information">
+                        <h3 className="store-product-name">
+                          {product.name}
+                        </h3>
+                        <p className="store-product-description">
+                          {product.description || 'Produk pilihan dari usaha kami.'}
+                        </p>
+                      </div>
+
+                      <div className="store-product-footer">
+                        <strong
+                          className="store-product-price"
+                          style={{ color: theme.text }}
+                        >
+                          {formatRupiah(product.price)}
+                        </strong>
+
+                        {!product.is_available || !product.is_active ? (
+                          <button
+                            className="btn store-product-button"
+                            disabled
+                          >
+                            Sedang tidak tersedia
+                          </button>
+                        ) : cartEnabled ? (
+                          <button
+                            className="btn store-product-button"
+                            style={{ background: theme.primary }}
+                            onClick={() => add(product)}
+                          >
+                            <Plus size={16} />
+                            Tambah ke keranjang
+                          </button>
+                        ) : (
+                          <button
+                            className="btn store-product-button"
+                            style={{ background: theme.primary }}
+                            disabled={directBusy === product.id}
+                            onClick={() => orderDirect(product)}
+                          >
+                            <MessageCircle size={16} />
+                            {directBusy === product.id
+                              ? 'Memeriksa produk...'
+                              : 'Pesan produk'}
+                          </button>
+                        )}
+
+                        {directErrors[product.id] && (
+                          <p className="notice error" role="alert">
+                            {directErrors[product.id]}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ABOUT */}
+        {business.description && (
+          <section
+            id="tentang"
+            className="store-about"
+          >
+            <div className="container store-about-inner">
+              <div className="store-about-mark">
+                {business.logo_url ? (
+                  <img
+                    src={business.logo_url}
+                    alt={`Logo ${business.name}`}
+                    loading="lazy"
+                  />
+                ) : (
+                  <span style={{ background: theme.soft, color: theme.text }}>
+                    {business.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                )}
+              </div>
+
+              <div className="store-about-copy">
+                <span
                   className="eyebrow"
                   style={{ color: theme.text }}
                 >
-                  KUNJUNGI KAMI
-                </div>
-
-                <h2>Informasi usaha</h2>
-
-                <p className="muted">
-                  Informasi dan lokasi {business.name}.
-                </p>
+                  TENTANG KAMI
+                </span>
+                <h2>Kenali {business.name} lebih dekat</h2>
+                <p>{business.description}</p>
               </div>
+            </div>
+          </section>
+        )}
 
-              <div className="store-information-item ">
-                {business.address && (
-                  <div className="store-information-item ">
-                    <MapPin
-                      size={19}
-                      style={{ color: theme.primary }}
-                    />
-                    <span>{business.address}</span>
-                  </div>
-                )}
-
-                {business.opening_hours?.display && (
-                  <div className="store-information-item">
-                    <Clock
-                      size={19}
-                      style={{ color: theme.primary }}
-                    />
-                    <span>
-                      {business.opening_hours.display}
-                    </span>
-                  </div>
-                )}
-
-                {business.additional_contact && (
-                 <div className="store-information-item ">
-                    <MessageCircle
-                      size={19}
-                      style={{ color: theme.primary }}
-                    />
-                    <span>{business.additional_contact}</span>
-                  </div>
-                )}
-
-                {business.google_maps_url && (
-                  <a
-                    href={business.google_maps_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn secondary store-map-button"
+        {/* BUSINESS INFORMATION & MAP */}
+        {(business.address ||
+          business.opening_hours?.display ||
+          business.additional_contact ||
+          business.google_maps_url) && (
+          <section
+            id="lokasi"
+            className="store-information"
+          >
+            <div className="container">
+              <div className="store-section-heading">
+                <div>
+                  <span
+                    className="eyebrow"
                     style={{ color: theme.text }}
                   >
-                    <MapPin size={16} />
-                    Lihat di Google Maps
+                    INFORMASI USAHA
+                  </span>
+                  <h2>Kunjungi dan hubungi kami</h2>
+                  <p>
+                    Informasi lokasi dan kontak {business.name}.
+                  </p>
+                </div>
+              </div>
+
+              <div className="store-information-layout">
+                <div className="store-information-cards">
+                  {business.address && (
+                    <div className="store-information-card">
+                      <div
+                        className="store-information-icon"
+                        style={{ background: theme.soft, color: theme.primary }}
+                      >
+                        <MapPin size={20} />
+                      </div>
+                      <div>
+                        <strong>Alamat usaha</strong>
+                        <p>{business.address}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {business.opening_hours?.display && (
+                    <div className="store-information-card">
+                      <div
+                        className="store-information-icon"
+                        style={{ background: theme.soft, color: theme.primary }}
+                      >
+                        <Clock size={20} />
+                      </div>
+                      <div>
+                        <strong>Jam operasional</strong>
+                        <p>{business.opening_hours.display}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {business.additional_contact && (
+                    <div className="store-information-card">
+                      <div
+                        className="store-information-icon"
+                        style={{ background: theme.soft, color: theme.primary }}
+                      >
+                        <MessageCircle size={20} />
+                      </div>
+                      <div>
+                        <strong>Kontak tambahan</strong>
+                        <p>{business.additional_contact}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {business.google_maps_url && (
+                    <a
+                      href={business.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn store-map-button"
+                      style={{ background: theme.primary }}
+                    >
+                      <MapPin size={17} />
+                      Buka petunjuk arah
+                      <ArrowUpRight size={16} />
+                    </a>
+                  )}
+                </div>
+
+                {business.address && (
+                  <div className="store-map-wrapper">
+                    <iframe
+                      title={`Lokasi ${business.name} di Google Maps`}
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                        business.address
+                      )}&output=embed`}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      allowFullScreen
+                    />
+                    <div className="store-map-caption">
+                      <MapPin size={15} style={{ color: theme.primary }} />
+                      <span>{business.address}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* SOCIAL MEDIA */}
+        {(business.instagram_url || business.facebook_url) && (
+          <section className="store-social">
+            <div className="container">
+              <span
+                className="eyebrow"
+                style={{ color: theme.text }}
+              >
+                TERHUBUNG DENGAN KAMI
+              </span>
+              <h2>Ikuti aktivitas kami</h2>
+              <p className="store-social-description">
+                Temukan informasi dan kabar terbaru dari {business.name}.
+              </p>
+
+              <div className="store-social-links">
+                {business.instagram_url && (
+                  <a
+                    href={business.instagram_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="store-social-link"
+                    style={{ color: theme.text }}
+                  >
+                    <Instagram size={19} />
+                    Instagram
+                    <ArrowUpRight size={15} />
+                  </a>
+                )}
+
+                {business.facebook_url && (
+                  <a
+                    href={business.facebook_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="store-social-link"
+                    style={{ color: theme.text }}
+                  >
+                    <Facebook size={19} />
+                    Facebook
                     <ArrowUpRight size={15} />
                   </a>
                 )}
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* SOCIAL MEDIA */}
-      {(business.instagram_url || business.facebook_url) && (
-        <section className="section store-social">
+        {/* CONTACT CTA */}
+        <section
+          className="store-cta-section"
+          style={{
+            '--store-cta-bg': theme.primary,
+          }}
+        >
           <div className="container">
-            <div className="eyebrow" style={{ color: theme.text }}>
-              TEMUKAN KAMI
-            </div>
+            <div className="store-cta-card">
+              <div className="store-cta-content">
+                <span>ADA YANG INGIN DITANYAKAN?</span>
+                <h2>Kami siap membantu kamu.</h2>
+                <p>
+                  Hubungi {business.name} untuk bertanya mengenai produk
+                  atau informasi lebih lanjut.
+                </p>
 
-            <h2>Ikuti media sosial kami</h2>
-
-            <div className="store-social-links">
-              {business.instagram_url && (
                 <a
-                  href={business.instagram_url}
+                  href={whatsappUrl(
+                    business.whatsapp_number,
+                    `Halo ${business.name}, saya ingin bertanya.`
+                  )}
                   target="_blank"
-                  rel="noreferrer"
-                  className="store-social-link"
-                  style={{ color: theme.text }}
+                  rel="noopener noreferrer"
+                  className="btn store-cta-button"
                 >
-                  <Instagram size={19} />
-                  Instagram
-                  <ArrowUpRight size={15} />
+                  <MessageCircle size={18} />
+                  Hubungi melalui WhatsApp
+                  <ArrowUpRight size={17} />
                 </a>
-              )}
+              </div>
 
-              {business.facebook_url && (
-                <a
-                  href={business.facebook_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="store-social-link"
-                  style={{ color: theme.text }}
-                >
-                  <Facebook size={19} />
-                  Facebook
-                  <ArrowUpRight size={15} />
-                </a>
-              )}
+              <div className="store-cta-decoration">
+                <MessageCircle size={110} />
+              </div>
             </div>
           </div>
         </section>
-      )}
+      </main>
 
       {/* FOOTER */}
-
-{/* CONTACT CTA */}
-<section className="store-cta-section">
-  <div className="container">
-    <div
-      className="store-cta-card"
-      style={{
-        background: theme.primary,
-      }}
-    >
-      <div className="store-cta-content">
-        <span>ADA YANG INGIN DITANYAKAN?</span>
-        <h2>
-          Kami siap membantu kamu.
-        </h2>
-        <p>
-          Hubungi {business.name} untuk bertanya mengenai produk
-          atau informasi lebih lanjut.
-        </p>
-
-        <a
-          href={whatsappUrl(
-            business.whatsapp_number,
-            `Halo ${business.name}, saya ingin bertanya.`
-          )}
-          target="_blank"
-          rel="noreferrer"
-          className="btn store-cta-button"
-        >
-          <MessageCircle size={18} />
-          Hubungi melalui WhatsApp
-          <ArrowUpRight size={17} />
-        </a>
-      </div>
-
-      <div className="store-cta-decoration">
-        <MessageCircle size={110} />
-      </div>
-    </div>
-  </div>
-</section>
-
-      <footer className="footer store-footer">
+      <footer className="store-footer">
         <div className="container store-footer-inner">
-          <span>
+          <div className="store-footer-brand">
+            {business.logo_url && (
+              <img src={business.logo_url} alt="" />
+            )}
             <strong>{business.name}</strong>
-          </span>
+          </div>
 
           <span>
-            Dibuat dengan{' '}
-            <a
-              href="/"
-              style={{
-                color: theme.text,
-                fontWeight: 800,
-              }}
-            >
+            Website usaha dibuat dengan{' '}
+            <a href="/" style={{ color: theme.text }}>
               LinkUsaha
             </a>
           </span>
@@ -897,7 +987,6 @@ export function StorefrontClient({
           onClick={() => setCartOpen(true)}
         >
           <ShoppingBag size={18} />
-
           Keranjang ({cartQuantity}) · {formatRupiah(total)}
         </button>
       )}
@@ -909,10 +998,21 @@ export function StorefrontClient({
           role="dialog"
           aria-modal="true"
           aria-label="Keranjang belanja"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setCartOpen(false);
+            }
+          }}
         >
           <div className="cart-content">
             <div className="store-cart-heading">
               <div>
+                <span
+                  className="eyebrow"
+                  style={{ color: theme.text }}
+                >
+                  PESANAN KAMU
+                </span>
                 <h2>Keranjang pesanan</h2>
                 <p className="muted">
                   Periksa pesanan sebelum dikirim.
@@ -920,6 +1020,7 @@ export function StorefrontClient({
               </div>
 
               <button
+                type="button"
                 aria-label="Tutup keranjang"
                 onClick={() => setCartOpen(false)}
                 className="store-cart-close"
@@ -928,9 +1029,16 @@ export function StorefrontClient({
               </button>
             </div>
 
+            {cartError && (
+              <div className="notice error" role="alert">
+                {cartError}
+              </div>
+            )}
+
             {cart.length === 0 ? (
               <div className="empty">
-                Keranjang masih kosong.
+                <ShoppingBag size={34} />
+                <p>Keranjang masih kosong.</p>
               </div>
             ) : (
               <>
@@ -943,21 +1051,18 @@ export function StorefrontClient({
                       <div className="store-cart-item-top">
                         <div>
                           <strong>{item.name}</strong>
-
                           <div className="muted">
                             {formatRupiah(item.price)} / produk
                           </div>
                         </div>
-
                         <strong>
-                          {formatRupiah(
-                            item.price * item.quantity
-                          )}
+                          {formatRupiah(item.price * item.quantity)}
                         </strong>
                       </div>
 
                       <div className="store-cart-controls">
                         <button
+                          type="button"
                           className="btn secondary"
                           aria-label={`Kurangi ${item.name}`}
                           onClick={() => change(item.id, -1)}
@@ -968,6 +1073,7 @@ export function StorefrontClient({
                         <strong>{item.quantity}</strong>
 
                         <button
+                          type="button"
                           className="btn secondary"
                           aria-label={`Tambah ${item.name}`}
                           disabled={item.quantity >= 99}
@@ -977,6 +1083,7 @@ export function StorefrontClient({
                         </button>
 
                         <button
+                          type="button"
                           className="store-cart-remove"
                           onClick={() => removeFromCart(item.id)}
                         >
@@ -984,13 +1091,10 @@ export function StorefrontClient({
                         </button>
                       </div>
 
-                      {(
-                        !item.is_available ||
-                        !item.is_active
-                      ) && (
+                      {(!item.is_available || !item.is_active) && (
                         <p className="notice error">
-                          Produk ini sudah tidak tersedia.
-                          Hapus dari keranjang untuk melanjutkan.
+                          Produk ini sudah tidak tersedia. Hapus dari
+                          keranjang untuk melanjutkan.
                         </p>
                       )}
                     </div>
@@ -998,20 +1102,10 @@ export function StorefrontClient({
                 </div>
 
                 <div className="store-cart-form">
-                  {cartError && (
-                    <div
-                      className="notice error"
-                      role="alert"
-                    >
-                      {cartError}
-                    </div>
-                  )}
-
                   <div className="field">
                     <label htmlFor="customerName">
                       Nama pelanggan
                     </label>
-
                     <input
                       id="customerName"
                       value={customerName}
@@ -1026,13 +1120,10 @@ export function StorefrontClient({
                     <label htmlFor="note">
                       Catatan (opsional)
                     </label>
-
                     <textarea
                       id="note"
                       value={note}
-                      onChange={(event) =>
-                        setNote(event.target.value)
-                      }
+                      onChange={(event) => setNote(event.target.value)}
                       placeholder="Contoh: sambal dipisah"
                     />
                   </div>
@@ -1043,12 +1134,12 @@ export function StorefrontClient({
                   </div>
 
                   <p className="muted store-cart-disclaimer">
-                    Harga dan ketersediaan akhir akan
-                    dikonfirmasi oleh pemilik usaha melalui
-                    WhatsApp.
+                    Harga dan ketersediaan akhir akan dikonfirmasi
+                    oleh pemilik usaha melalui WhatsApp.
                   </p>
 
                   <button
+                    type="button"
                     className="btn store-cart-submit"
                     style={{ background: theme.primary }}
                     disabled={
@@ -1063,7 +1154,6 @@ export function StorefrontClient({
                     onClick={sendCart}
                   >
                     <MessageCircle size={17} />
-
                     {sending
                       ? 'Memeriksa produk...'
                       : 'Kirim pesanan ke WhatsApp'}
@@ -1076,4 +1166,5 @@ export function StorefrontClient({
       )}
     </div>
   );
+
 }
