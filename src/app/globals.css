@@ -5941,3 +5941,23 @@
   border-color: #eab8b3;
 }
 
+
+/* RINGKASAN USAHA - KARTU INTERAKTIF */
+.dashboard-stat-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-stat-link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(30, 70, 45, 0.08);
+}
+
+.dashboard-stat-link:focus-visible {
+  outline: 2px solid #16845b;
+  outline-offset: 3px;
+}

@@ -11,6 +11,9 @@ import {
   LogOut,
   Eye,
   CreditCard,
+  Store,
+  TrendingUp,
+  UsersRound,
 } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/server';
@@ -25,26 +28,37 @@ export default async function DashboardLayout({ children }) {
 
   if (!user) redirect('/login');
 
-  const [{ data: business }, { data: profile }] = await Promise.all([
-    supabase
+  // Ambil role pengguna
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const isPlatformAdmin = ['admin', 'super_admin'].includes(
+    profile?.role
+  );
+
+  const isSuperAdmin = profile?.role === 'super_admin';
+
+  // Ambil data usaha hanya untuk pengguna biasa
+  let business = null;
+
+  if (!isPlatformAdmin) {
+    const { data } = await supabase
       .from('businesses')
       .select('slug, name')
       .eq('owner_id', user.id)
-      .maybeSingle(),
+      .maybeSingle();
 
-    supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle(),
-  ]);
+    business = data;
+  }
 
-  const isPlatformAdmin = ['admin', 'super_admin'].includes(profile?.role);
-
-  const navigation = [
+  // MENU PEMILIK USAHA
+  const businessNavigation = [
     {
       href: '/dashboard',
-      label: 'Beranda',
+      label: 'Ringkasan',
       icon: LayoutDashboard,
     },
     {
@@ -69,60 +83,177 @@ export default async function DashboardLayout({ children }) {
     },
     {
       href: '/dashboard/profil',
-      label: 'Akun',
+      label: 'Akun saya',
       icon: UserRound,
     },
   ];
 
+  // MENU ADMIN PLATFORM
+  const adminNavigation = [
+    {
+      href: '/dashboard/admin',
+      label: 'Statistik Admin',
+      icon: TrendingUp,
+    },
+    {
+      href: '/dashboard/admin/bisnis',
+      label: 'Manajemen Bisnis',
+      icon: Store,
+    },
+    {
+  href: '/dashboard/admin/pembayaran',
+  label: 'Langganan & Pembayaran',
+  icon: CreditCard,
+},
+{
+  href: '/dashboard/admin/pengguna',
+  label: 'Manajemen Pengguna',
+  icon: UsersRound,
+},
+  ];
+
+  // Pilih navigasi berdasarkan role
+  const navigation = isPlatformAdmin
+    ? adminNavigation
+    : businessNavigation;
+
   return (
     <div className="dashboard-shell">
+
       {/* SIDEBAR DESKTOP */}
       <aside className="sidebar">
+
+        {/* BRAND */}
         <Link href="/" className="brand dashboard-brand">
           link<span>usaha</span>
         </Link>
 
-        <div className="dashboard-nav-label">MENU UTAMA</div>
+        {isPlatformAdmin ? (
+          <>
+            {/* ADMIN SIDEBAR */}
+            <div className="dashboard-nav-label">
+              ADMIN PLATFORM
+            </div>
 
-        <nav className="dashboard-sidebar-nav" aria-label="Navigasi utama">
-          {navigation.map(({ href, label, icon: Icon }) => (
-            <Link className="nav-link" href={href} key={href}>
-              <Icon size={18} />
-              <span>
-                {label === 'Beranda'
-                  ? 'Ringkasan'
-                  : label === 'Akun'
-                    ? 'Akun saya'
-                    : label}
-              </span>
-            </Link>
-          ))}
-
-          {isPlatformAdmin && (
-            <Link className="nav-link dashboard-admin-link" href="/dashboard/admin">
-              <ShieldCheck size={18} />
-              <span>Admin platform</span>
-            </Link>
-          )}
-
-          {business?.slug && (
-            <Link
-              className="nav-link dashboard-external-link"
-              href={`/${business.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <nav
+              className="dashboard-sidebar-nav"
+              aria-label="Navigasi admin"
             >
-              <ExternalLink size={18} />
-              <span>Lihat website</span>
-            </Link>
-          )}
-        </nav>
+              {adminNavigation.map(({ href, label, icon: Icon }) => (
+                <Link
+                  className="nav-link dashboard-admin-link"
+                  href={href}
+                  key={href}
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </nav>
 
+            {/* IDENTITAS ADMIN */}
+            <div
+              className="dashboard-nav-label"
+              style={{ marginTop: 25 }}
+            >
+              AKUN ADMIN
+            </div>
+
+            <div
+              style={{
+                padding: '10px 12px',
+                fontSize: 13,
+                color: 'var(--muted, #64748b)',
+                lineHeight: 1.6,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 5,
+                }}
+              >
+                <ShieldCheck size={16} />
+                <strong>
+                  {isSuperAdmin
+                    ? 'Super Administrator'
+                    : 'Administrator'}
+                </strong>
+              </div>
+              <div style={{ overflowWrap: 'anywhere' }}>
+                {user.email}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* SIDEBAR PEMILIK USAHA */}
+            <div className="dashboard-nav-label">
+              MENU USAHA
+            </div>
+
+            <nav
+              className="dashboard-sidebar-nav"
+              aria-label="Navigasi usaha"
+            >
+              {businessNavigation.map(({ href, label, icon: Icon }) => (
+                <Link
+                  className="nav-link"
+                  href={href}
+                  key={href}
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </nav>
+
+            {/* LIHAT WEBSITE */}
+            {business?.slug && (
+              <>
+                <div
+                  className="dashboard-nav-label"
+                  style={{ marginTop: 25 }}
+                >
+                  WEBSITE USAHA
+                </div>
+
+                <nav className="dashboard-sidebar-nav">
+                  <Link
+                    className="nav-link dashboard-external-link"
+                    href={`/${business.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink size={18} />
+                    <span>Lihat website</span>
+                  </Link>
+                </nav>
+              </>
+            )}
+
+            {/* EMAIL PEMILIK */}
+            <div
+              className="dashboard-user-email"
+              style={{
+                padding: '10px 12px',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {user.email}
+            </div>
+          </>
+        )}
+
+        {/* LOGOUT */}
         <div className="side-bottom dashboard-account-bottom">
-          <div className="dashboard-user-email">{user.email}</div>
-
           <form action={signOut}>
-            <button type="submit" className="dashboard-logout">
+            <button
+              type="submit"
+              className="dashboard-logout"
+            >
               <LogOut size={16} />
               Keluar akun
             </button>
@@ -132,12 +263,14 @@ export default async function DashboardLayout({ children }) {
 
       {/* MOBILE HEADER */}
       <header className="dashboard-mobile-header">
+
         <Link href="/" className="brand dashboard-brand">
           link<span>usaha</span>
         </Link>
 
         <div className="dashboard-mobile-header-actions">
-          {business?.slug && (
+
+          {!isPlatformAdmin && business?.slug && (
             <Link
               href={`/${business.slug}`}
               target="_blank"
@@ -171,18 +304,28 @@ export default async function DashboardLayout({ children }) {
         </div>
       </header>
 
-      {/* HALAMAN */}
-      <main className="dash-main">{children}</main>
+      {/* KONTEN HALAMAN */}
+      <main className="dash-main">
+        {children}
+      </main>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <nav className="dashboard-mobile-nav" aria-label="Navigasi dashboard">
+      <nav
+        className="dashboard-mobile-nav"
+        aria-label="Navigasi dashboard"
+      >
         {navigation.map(({ href, label, icon: Icon }) => (
-          <Link href={href} className="dashboard-mobile-nav-item" key={href}>
+          <Link
+            href={href}
+            className="dashboard-mobile-nav-item"
+            key={href}
+          >
             <Icon size={21} strokeWidth={1.9} />
-            <span>{label}</span>
+            <span>{isPlatformAdmin ? 'Admin' : label}</span>
           </Link>
         ))}
       </nav>
+
     </div>
   );
 }
