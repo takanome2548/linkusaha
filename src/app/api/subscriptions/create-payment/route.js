@@ -149,9 +149,11 @@ export async function POST() {
     }
 
     // 7. Siapkan URL aplikasi.
-    const appUrl = (
-      process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    ).replace(/\/+$/, '');
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '');
+
+if (!appUrl || !appUrl.startsWith('https://')) {
+  throw new Error('NEXT_PUBLIC_APP_URL belum dikonfigurasi dengan URL HTTPS.');
+}
 
     // 8. Buat transaksi Midtrans Snap.
     const snapResult = await createSnapTransaction({
