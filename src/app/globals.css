@@ -5700,3 +5700,244 @@
     scroll-behavior: auto !important;
   }
 }
+.store-preview-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: #fff8e8;
+  border-bottom: 1px solid #f0dba8;
+  color: #76551b;
+}
+
+.store-preview-banner > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.store-preview-banner strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.store-preview-banner span {
+  font-size: 12px;
+}
+
+.store-preview-banner a {
+  color: #76551b;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .store-preview-banner {
+    padding: 11px 14px;
+    align-items: flex-start;
+  }
+
+  .store-preview-banner > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .store-preview-banner span,
+  .store-preview-banner a {
+    font-size: 11px;
+  }
+}
+
+/* =========================================
+   DASHBOARD - PUBLICATION STATUS
+========================================= */
+
+.dashboard-publish-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 24px;
+}
+
+.dashboard-publish-card .panel-header {
+  margin: 0;
+}
+
+.dashboard-publish-card .panel-header h2 {
+  margin: 0 0 7px;
+  color: #26372c;
+  font-family: Manrope, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.dashboard-publish-card .panel-header p {
+  margin: 0;
+  color: #78847c;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.dashboard-publish-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 17px;
+  border: 1px solid #e7ece8;
+  border-radius: 13px;
+  background: #f9fbf9;
+}
+
+.dashboard-publish-status strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #34453a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.dashboard-publish-status p {
+  margin: 0;
+  color: #78847c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dashboard-publish-card .status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 82px;
+  padding: 7px 12px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dashboard-publish-card .status-active {
+  background: #dff3e5;
+  color: #126b49;
+}
+
+.dashboard-publish-card .status-inactive {
+  background: #fff1d9;
+  color: #956018;
+}
+
+.dashboard-publish-card form {
+  margin: 0;
+}
+
+.dashboard-publish-card form .btn {
+  min-height: 45px;
+  padding-inline: 20px;
+}
+
+.dashboard-publish-card .form-hint {
+  margin: -8px 0 0;
+  color: #89948c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 650px) {
+  .dashboard-publish-card {
+    padding: 19px;
+    gap: 16px;
+  }
+
+  .dashboard-publish-status {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .dashboard-publish-status p {
+    font-size: 11px;
+  }
+
+  .dashboard-publish-card form .btn {
+    width: 100%;
+    min-height: 47px;
+  }
+}
+
+/* PUBLIKASI DI DALAM KARTU WEBSITE */
+.dashboard-website-publication {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #e7ece8;
+}
+
+.dashboard-website-publication strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #34453a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.dashboard-website-publication p {
+  margin: 0;
+  color: #78847c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dashboard-website-publication form {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.dashboard-website-publication .btn {
+  min-height: 43px;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .dashboard-website-publication {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .dashboard-website-publication form,
+  .dashboard-website-publication form .btn {
+    width: 100%;
+  }
+}
+
+
+/* TOMBOL NONAKTIFKAN WEBSITE */
+.dashboard-website-publication form .btn.secondary {
+  min-height: 36px;
+  padding: 8px 13px;
+  font-size: 11px;
+  border-radius: 9px;
+  background: #fff1f0;
+  color: #c2413b;
+  border: 1px solid #f3d2cf;
+  box-shadow: none;
+}
+
+.dashboard-website-publication form .btn.secondary:hover {
+  background: #fee2df;
+  color: #a8322d;
+  border-color: #eab8b3;
+}
+

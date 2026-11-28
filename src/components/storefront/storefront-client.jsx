@@ -56,6 +56,7 @@ export function StorefrontClient({
   business,
   products,
   cartEnabled,
+  previewMode = false,
 }) {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -80,7 +81,13 @@ export function StorefrontClient({
     0
   );
 
+  // ==========================================
+  // CART
+  // ==========================================
+
   function add(product) {
+    if (previewMode) return;
+
     setCartError('');
 
     const found = cart.find((item) => item.id === product.id);
@@ -96,6 +103,7 @@ export function StorefrontClient({
             : item
         )
       );
+
       return;
     }
 
@@ -115,6 +123,8 @@ export function StorefrontClient({
   }
 
   function change(id, delta) {
+    if (previewMode) return;
+
     setCart((current) =>
       current
         .map((item) =>
@@ -130,13 +140,21 @@ export function StorefrontClient({
   }
 
   function removeFromCart(id) {
+    if (previewMode) return;
+
     setCart((current) =>
       current.filter((item) => item.id !== id)
     );
+
     setCartError('');
   }
 
+  // ==========================================
+  // DIRECT WHATSAPP ORDER
+  // ==========================================
+
   async function orderDirect(product) {
+    if (previewMode) return;
     if (directBusy) return;
 
     const tab = window.open('about:blank', '_blank');
@@ -146,6 +164,7 @@ export function StorefrontClient({
         ...current,
         [product.id]: 'Izinkan pop-up untuk membuka WhatsApp.',
       }));
+
       return;
     }
 
@@ -240,7 +259,12 @@ export function StorefrontClient({
     }
   }
 
+  // ==========================================
+  // CART WHATSAPP ORDER
+  // ==========================================
+
   async function sendCart() {
+    if (previewMode) return;
     if (!cart.length || sending) return;
 
     if (
@@ -254,6 +278,7 @@ export function StorefrontClient({
       setCartError(
         'Ada produk yang tidak tersedia. Periksa keranjang terlebih dahulu.'
       );
+
       return;
     }
 
@@ -365,7 +390,10 @@ export function StorefrontClient({
     }
   }
 
-  
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
     <div
       className="storefront"
@@ -375,6 +403,26 @@ export function StorefrontClient({
         '--store-text': theme.text,
       }}
     >
+      {/* PREVIEW BANNER */}
+      {previewMode && (
+        <div className="store-preview-banner">
+          <div>
+            <strong>
+              <CheckCircle2 size={17} />
+              Mode Pratinjau
+            </strong>
+
+            <span>
+              Website ini belum ditampilkan secara publik.
+            </span>
+          </div>
+
+          <a href="/dashboard">
+            Kembali ke dashboard
+          </a>
+        </div>
+      )}
+
       {/* HEADER */}
       <header className="store-header">
         <div className="container store-header-inner">
@@ -394,34 +442,42 @@ export function StorefrontClient({
                 {business.name?.trim()?.charAt(0)?.toUpperCase() || 'U'}
               </span>
             )}
+
             <span>{business.name}</span>
           </a>
 
-          <nav className="store-nav" aria-label="Navigasi utama">
+          <nav
+            className="store-nav"
+            aria-label="Navigasi utama"
+          >
             {liveProducts.length > 0 && (
               <a href="#katalog">Produk</a>
             )}
+
             {business.description && (
               <a href="#tentang">Tentang</a>
             )}
+
             {(business.address || business.google_maps_url) && (
               <a href="#lokasi">Lokasi</a>
             )}
           </nav>
 
-          <a
-            href={whatsappUrl(
-              business.whatsapp_number,
-              `Halo ${business.name}, saya ingin bertanya.`
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn store-header-contact"
-            style={{ background: theme.primary }}
-          >
-            <MessageCircle size={16} />
-            <span>Hubungi kami</span>
-          </a>
+          {!previewMode && (
+            <a
+              href={whatsappUrl(
+                business.whatsapp_number,
+                `Halo ${business.name}, saya ingin bertanya.`
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn store-header-contact"
+              style={{ background: theme.primary }}
+            >
+              <MessageCircle size={16} />
+              <span>Hubungi kami</span>
+            </a>
+          )}
         </div>
       </header>
 
@@ -465,29 +521,30 @@ export function StorefrontClient({
                   </a>
                 )}
 
-                <a
-                  href={whatsappUrl(
-                    business.whatsapp_number,
-                    `Halo ${business.name}, saya ingin bertanya.`
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn store-hero-secondary"
-                >
-                  <MessageCircle size={17} />
-                  Hubungi kami
-                </a>
+                {!previewMode && (
+                  <a
+                    href={whatsappUrl(
+                      business.whatsapp_number,
+                      `Halo ${business.name}, saya ingin bertanya.`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn store-hero-secondary"
+                  >
+                    <MessageCircle size={17} />
+                    Hubungi kami
+                  </a>
+                )}
               </div>
 
               <div className="store-hero-trust">
                 <span
                   className="store-hero-trust-icon"
-                  style={{
-                    background: theme.primary,
-                  }}
+                  style={{ background: theme.primary }}
                 >
                   <CheckCircle2 size={15} />
                 </span>
+
                 Pemesanan mudah dan langsung melalui WhatsApp
               </div>
             </div>
@@ -538,10 +595,12 @@ export function StorefrontClient({
                 >
                   <MessageCircle size={21} />
                 </div>
+
                 <div>
                   <strong>Pesan langsung</strong>
                   <span>Praktis melalui WhatsApp</span>
                 </div>
+
                 <ArrowUpRight
                   size={19}
                   className="store-hero-floating-arrow"
@@ -557,39 +616,57 @@ export function StorefrontClient({
             <div className="store-benefit">
               <div
                 className="store-benefit-icon"
-                style={{ background: theme.soft, color: theme.primary }}
+                style={{
+                  background: theme.soft,
+                  color: theme.primary,
+                }}
               >
                 <ShoppingBag size={21} />
               </div>
+
               <div>
                 <strong>Produk pilihan</strong>
-                <span>Temukan produk yang sesuai kebutuhanmu.</span>
+                <span>
+                  Temukan produk yang sesuai kebutuhanmu.
+                </span>
               </div>
             </div>
 
             <div className="store-benefit">
               <div
                 className="store-benefit-icon"
-                style={{ background: theme.soft, color: theme.primary }}
+                style={{
+                  background: theme.soft,
+                  color: theme.primary,
+                }}
               >
                 <MessageCircle size={21} />
               </div>
+
               <div>
                 <strong>Pemesanan praktis</strong>
-                <span>Hubungi usaha langsung melalui WhatsApp.</span>
+                <span>
+                  Hubungi usaha langsung melalui WhatsApp.
+                </span>
               </div>
             </div>
 
             <div className="store-benefit">
               <div
                 className="store-benefit-icon"
-                style={{ background: theme.soft, color: theme.primary }}
+                style={{
+                  background: theme.soft,
+                  color: theme.primary,
+                }}
               >
                 <CheckCircle2 size={21} />
               </div>
+
               <div>
                 <strong>Informasi transparan</strong>
-                <span>Lihat harga dan informasi usaha dengan mudah.</span>
+                <span>
+                  Lihat harga dan informasi usaha dengan mudah.
+                </span>
               </div>
             </div>
           </div>
@@ -610,7 +687,9 @@ export function StorefrontClient({
                   >
                     PILIHAN UNTUKMU
                   </span>
+
                   <h2>Jelajahi produk kami</h2>
+
                   <p>
                     Temukan produk pilihan dari {business.name}.
                   </p>
@@ -651,75 +730,71 @@ export function StorefrontClient({
                           />
                         </div>
                       )}
-
-                      {!product.is_available || !product.is_active ? (
-                        <span className="store-product-unavailable">
-                          Tidak tersedia
-                        </span>
-                      ) : (
-                        <span className="store-product-available">
-                          <span
-                            style={{ background: theme.primary }}
-                          />
-                          Tersedia
-                        </span>
-                      )}
                     </div>
 
-                    <div className="store-product-body">
-                      <div className="store-product-information">
-                        <h3 className="store-product-name">
-                          {product.name}
-                        </h3>
+                    <div className="store-product-content">
+                      <h3>{product.name}</h3>
+
+                      {product.description && (
                         <p className="store-product-description">
-                          {product.description || 'Produk pilihan dari usaha kami.'}
+                          {product.description}
                         </p>
+                      )}
+
+                      <div className="store-product-price">
+                        {formatRupiah(product.price)}
                       </div>
 
-                      <div className="store-product-footer">
-                        <strong
-                          className="store-product-price"
-                          style={{ color: theme.text }}
+                      {previewMode ? (
+                        <button
+                          type="button"
+                          className="btn store-product-button"
+                          disabled
                         >
-                          {formatRupiah(product.price)}
-                        </strong>
+                          Pratinjau produk
+                        </button>
+                      ) : !product.is_available || !product.is_active ? (
+                        <button
+                          type="button"
+                          className="btn store-product-button"
+                          disabled
+                        >
+                          Sedang tidak tersedia
+                        </button>
+                      ) : cartEnabled ? (
+                        <button
+                          type="button"
+                          className="btn store-product-button"
+                          style={{ background: theme.primary }}
+                          onClick={() => add(product)}
+                        >
+                          <Plus size={16} />
+                          Tambah ke keranjang
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn store-product-button"
+                          style={{ background: theme.primary }}
+                          disabled={directBusy === product.id}
+                          onClick={() => orderDirect(product)}
+                        >
+                          <MessageCircle size={16} />
 
-                        {!product.is_available || !product.is_active ? (
-                          <button
-                            className="btn store-product-button"
-                            disabled
-                          >
-                            Sedang tidak tersedia
-                          </button>
-                        ) : cartEnabled ? (
-                          <button
-                            className="btn store-product-button"
-                            style={{ background: theme.primary }}
-                            onClick={() => add(product)}
-                          >
-                            <Plus size={16} />
-                            Tambah ke keranjang
-                          </button>
-                        ) : (
-                          <button
-                            className="btn store-product-button"
-                            style={{ background: theme.primary }}
-                            disabled={directBusy === product.id}
-                            onClick={() => orderDirect(product)}
-                          >
-                            <MessageCircle size={16} />
-                            {directBusy === product.id
-                              ? 'Memeriksa produk...'
-                              : 'Pesan produk'}
-                          </button>
-                        )}
+                          {directBusy === product.id
+                            ? 'Memeriksa produk...'
+                            : 'Pesan produk'}
+                        </button>
+                      )}
 
-                        {directErrors[product.id] && (
-                          <p className="notice error" role="alert">
-                            {directErrors[product.id]}
-                          </p>
-                        )}
-                      </div>
+                      {directErrors[product.id] && (
+                        <p
+                          className="notice error"
+                          role="alert"
+                        >
+                          {directErrors[product.id]}
+                        </p>
+                      )}
                     </div>
                   </article>
                 ))}
@@ -743,7 +818,12 @@ export function StorefrontClient({
                     loading="lazy"
                   />
                 ) : (
-                  <span style={{ background: theme.soft, color: theme.text }}>
+                  <span
+                    style={{
+                      background: theme.soft,
+                      color: theme.text,
+                    }}
+                  >
                     {business.name?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 )}
@@ -756,7 +836,11 @@ export function StorefrontClient({
                 >
                   TENTANG KAMI
                 </span>
-                <h2>Kenali {business.name} lebih dekat</h2>
+
+                <h2>
+                  Kenali {business.name} lebih dekat
+                </h2>
+
                 <p>{business.description}</p>
               </div>
             </div>
@@ -781,7 +865,9 @@ export function StorefrontClient({
                   >
                     INFORMASI USAHA
                   </span>
+
                   <h2>Kunjungi dan hubungi kami</h2>
+
                   <p>
                     Informasi lokasi dan kontak {business.name}.
                   </p>
@@ -794,10 +880,14 @@ export function StorefrontClient({
                     <div className="store-information-card">
                       <div
                         className="store-information-icon"
-                        style={{ background: theme.soft, color: theme.primary }}
+                        style={{
+                          background: theme.soft,
+                          color: theme.primary,
+                        }}
                       >
                         <MapPin size={20} />
                       </div>
+
                       <div>
                         <strong>Alamat usaha</strong>
                         <p>{business.address}</p>
@@ -809,10 +899,14 @@ export function StorefrontClient({
                     <div className="store-information-card">
                       <div
                         className="store-information-icon"
-                        style={{ background: theme.soft, color: theme.primary }}
+                        style={{
+                          background: theme.soft,
+                          color: theme.primary,
+                        }}
                       >
                         <Clock size={20} />
                       </div>
+
                       <div>
                         <strong>Jam operasional</strong>
                         <p>{business.opening_hours.display}</p>
@@ -824,10 +918,14 @@ export function StorefrontClient({
                     <div className="store-information-card">
                       <div
                         className="store-information-icon"
-                        style={{ background: theme.soft, color: theme.primary }}
+                        style={{
+                          background: theme.soft,
+                          color: theme.primary,
+                        }}
                       >
                         <MessageCircle size={20} />
                       </div>
+
                       <div>
                         <strong>Kontak tambahan</strong>
                         <p>{business.additional_contact}</p>
@@ -861,8 +959,13 @@ export function StorefrontClient({
                       referrerPolicy="no-referrer-when-downgrade"
                       allowFullScreen
                     />
+
                     <div className="store-map-caption">
-                      <MapPin size={15} style={{ color: theme.primary }} />
+                      <MapPin
+                        size={15}
+                        style={{ color: theme.primary }}
+                      />
+
                       <span>{business.address}</span>
                     </div>
                   </div>
@@ -882,7 +985,9 @@ export function StorefrontClient({
               >
                 TERHUBUNG DENGAN KAMI
               </span>
+
               <h2>Ikuti aktivitas kami</h2>
+
               <p className="store-social-description">
                 Temukan informasi dan kabar terbaru dari {business.name}.
               </p>
@@ -931,25 +1036,29 @@ export function StorefrontClient({
             <div className="store-cta-card">
               <div className="store-cta-content">
                 <span>ADA YANG INGIN DITANYAKAN?</span>
+
                 <h2>Kami siap membantu kamu.</h2>
+
                 <p>
                   Hubungi {business.name} untuk bertanya mengenai produk
                   atau informasi lebih lanjut.
                 </p>
 
-                <a
-                  href={whatsappUrl(
-                    business.whatsapp_number,
-                    `Halo ${business.name}, saya ingin bertanya.`
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn store-cta-button"
-                >
-                  <MessageCircle size={18} />
-                  Hubungi melalui WhatsApp
-                  <ArrowUpRight size={17} />
-                </a>
+                {!previewMode && (
+                  <a
+                    href={whatsappUrl(
+                      business.whatsapp_number,
+                      `Halo ${business.name}, saya ingin bertanya.`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn store-cta-button"
+                  >
+                    <MessageCircle size={18} />
+                    Hubungi melalui WhatsApp
+                    <ArrowUpRight size={17} />
+                  </a>
+                )}
               </div>
 
               <div className="store-cta-decoration">
@@ -965,14 +1074,21 @@ export function StorefrontClient({
         <div className="container store-footer-inner">
           <div className="store-footer-brand">
             {business.logo_url && (
-              <img src={business.logo_url} alt="" />
+              <img
+                src={business.logo_url}
+                alt=""
+              />
             )}
+
             <strong>{business.name}</strong>
           </div>
 
           <span>
             Website usaha dibuat dengan{' '}
-            <a href="/" style={{ color: theme.text }}>
+            <a
+              href="/"
+              style={{ color: theme.text }}
+            >
               LinkUsaha
             </a>
           </span>
@@ -980,8 +1096,9 @@ export function StorefrontClient({
       </footer>
 
       {/* CART FLOATING BUTTON */}
-      {cartEnabled && cart.length > 0 && (
+      {!previewMode && cartEnabled && cart.length > 0 && (
         <button
+          type="button"
           className="btn cart-fab"
           style={{ background: theme.primary }}
           onClick={() => setCartOpen(true)}
@@ -992,7 +1109,7 @@ export function StorefrontClient({
       )}
 
       {/* CART DIALOG */}
-      {cartEnabled && cartOpen && (
+      {!previewMode && cartEnabled && cartOpen && (
         <div
           className="cart-panel"
           role="dialog"
@@ -1013,7 +1130,9 @@ export function StorefrontClient({
                 >
                   PESANAN KAMU
                 </span>
+
                 <h2>Keranjang pesanan</h2>
+
                 <p className="muted">
                   Periksa pesanan sebelum dikirim.
                 </p>
@@ -1030,7 +1149,10 @@ export function StorefrontClient({
             </div>
 
             {cartError && (
-              <div className="notice error" role="alert">
+              <div
+                className="notice error"
+                role="alert"
+              >
                 {cartError}
               </div>
             )}
@@ -1051,10 +1173,12 @@ export function StorefrontClient({
                       <div className="store-cart-item-top">
                         <div>
                           <strong>{item.name}</strong>
+
                           <div className="muted">
                             {formatRupiah(item.price)} / produk
                           </div>
                         </div>
+
                         <strong>
                           {formatRupiah(item.price * item.quantity)}
                         </strong>
@@ -1106,6 +1230,7 @@ export function StorefrontClient({
                     <label htmlFor="customerName">
                       Nama pelanggan
                     </label>
+
                     <input
                       id="customerName"
                       value={customerName}
@@ -1120,10 +1245,13 @@ export function StorefrontClient({
                     <label htmlFor="note">
                       Catatan (opsional)
                     </label>
+
                     <textarea
                       id="note"
                       value={note}
-                      onChange={(event) => setNote(event.target.value)}
+                      onChange={(event) =>
+                        setNote(event.target.value)
+                      }
                       placeholder="Contoh: sambal dipisah"
                     />
                   </div>
@@ -1154,6 +1282,7 @@ export function StorefrontClient({
                     onClick={sendCart}
                   >
                     <MessageCircle size={17} />
+
                     {sending
                       ? 'Memeriksa produk...'
                       : 'Kirim pesanan ke WhatsApp'}
@@ -1166,5 +1295,4 @@ export function StorefrontClient({
       )}
     </div>
   );
-
 }

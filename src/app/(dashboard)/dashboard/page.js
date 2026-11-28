@@ -159,7 +159,9 @@ export default async function DashboardPage({ searchParams }) {
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                 />
-                <small className="muted">JPG, PNG, atau WebP. Maksimal 5 MB.</small>
+                <small className="muted">
+                  JPG, PNG, atau WebP. Maksimal 5 MB.
+                </small>
               </div>
 
               <div className="field">
@@ -170,7 +172,9 @@ export default async function DashboardPage({ searchParams }) {
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                 />
-                <small className="muted">Pilih foto yang menggambarkan usahamu.</small>
+                <small className="muted">
+                  Pilih foto yang menggambarkan usahamu.
+                </small>
               </div>
             </div>
 
@@ -224,9 +228,11 @@ export default async function DashboardPage({ searchParams }) {
   ]);
 
   const published = business.publication_status === 'published';
+
   const appUrl = (
     process.env.NEXT_PUBLIC_APP_URL || 'https://linkusaha.vercel.app'
   ).replace(/\/+$/, '');
+
   const websiteUrl = `${appUrl}/${business.slug}`;
 
   return (
@@ -235,34 +241,55 @@ export default async function DashboardPage({ searchParams }) {
         <div>
           <div className="eyebrow">BERANDA USAHA</div>
           <h1>Halo, {business.name}! 👋</h1>
-          <p>Senang melihat usahamu berkembang. Apa yang ingin kamu kelola hari ini?</p>
+          <p>
+            Senang melihat usahamu berkembang. Apa yang ingin kamu kelola hari ini?
+          </p>
         </div>
 
-        <Link href="/dashboard/pengaturan" className="btn secondary dashboard-settings-button">
+        <Link
+          href="/dashboard/pengaturan"
+          className="btn secondary dashboard-settings-button"
+        >
           Pengaturan usaha
         </Link>
       </div>
 
       {params?.error && (
-        <div className="notice error dashboard-notice">{params.error}</div>
+        <div className="notice error dashboard-notice">
+          {params.error}
+        </div>
       )}
 
       {params?.message && (
-        <div className="notice success dashboard-notice">{params.message}</div>
+        <div className="notice success dashboard-notice">
+          {params.message}
+        </div>
       )}
 
-      {/* WEBSITE LINK */}
+      {/* WEBSITE USAHA: LINK DAN PUBLIKASI */}
       <section className="dashboard-website-card">
         <div className="dashboard-website-top">
           <div>
             <span className="dashboard-card-label">WEBSITE USAHAMU</span>
+
             <div className="dashboard-website-status">
-              <span className={`dashboard-status-dot ${published ? 'is-published' : ''}`} />
-              {published ? 'Website aktif dan bisa dikunjungi' : 'Website belum dipublikasikan'}
+              <span
+                className={`dashboard-status-dot ${
+                  published ? 'is-published' : ''
+                }`}
+              />
+              {published
+                ? 'Website aktif dan bisa dikunjungi pelanggan'
+                : 'Website belum dipublikasikan'}
             </div>
           </div>
-          <span className={`dashboard-status-badge ${published ? 'published' : 'draft'}`}>
-            {published ? 'Aktif' : 'Draft'}
+
+          <span
+            className={`dashboard-status-badge ${
+              published ? 'published' : 'draft'
+            }`}
+          >
+            {published ? 'Aktif' : 'Nonaktif'}
           </span>
         </div>
 
@@ -270,9 +297,36 @@ export default async function DashboardPage({ searchParams }) {
 
         <DashboardLinkActions url={websiteUrl} />
 
+        <div className="dashboard-website-publication">
+          <div>
+            <strong>Publikasi website</strong>
+            <p>
+              {published
+                ? 'Website kamu sedang ditampilkan kepada pelanggan.'
+                : 'Aktifkan website agar pelanggan bisa mengunjunginya.'}
+            </p>
+          </div>
+
+          <form action={updatePublication}>
+            <input
+              type="hidden"
+              name="status"
+              value={published ? 'unpublished' : 'published'}
+            />
+
+            <button
+              className={`btn ${published ? 'secondary' : ''}`}
+              type="submit"
+            >
+              {published ? 'Nonaktifkan Website' : 'Aktifkan Website'}
+            </button>
+          </form>
+        </div>
+
         {!published && (
           <p className="dashboard-website-hint">
-            Website kamu belum terlihat oleh pelanggan. Lengkapi informasi lalu publikasikan.
+            Untuk mengaktifkan website, pastikan langganan kamu masih aktif.
+            Jika belum berlangganan, kamu akan diarahkan ke halaman langganan.
           </p>
         )}
       </section>
@@ -289,8 +343,10 @@ export default async function DashboardPage({ searchParams }) {
         <div className="panel dashboard-stat-card">
           <div className="dashboard-stat-icon green">↗</div>
           <span>Status website</span>
-          <strong>{published ? 'Aktif' : 'Draft'}</strong>
-          <small>{published ? 'Bisa dilihat pelanggan' : 'Belum terlihat publik'}</small>
+          <strong>{published ? 'Aktif' : 'Nonaktif'}</strong>
+          <small>
+            {published ? 'Bisa dilihat pelanggan' : 'Belum terlihat publik'}
+          </small>
         </div>
 
         <div className="panel dashboard-stat-card">
@@ -344,7 +400,11 @@ export default async function DashboardPage({ searchParams }) {
           <span className="dashboard-manage-arrow">→</span>
         </Link>
 
-        <Link href={`/${business.slug}`} target="_blank" className="dashboard-manage-card">
+        <Link
+          href={`/${business.slug}`}
+          target="_blank"
+          className="dashboard-manage-card"
+        >
           <div className="dashboard-manage-icon orange">◉</div>
           <div>
             <h3>Pratinjau website</h3>
@@ -353,36 +413,6 @@ export default async function DashboardPage({ searchParams }) {
           <span className="dashboard-manage-arrow">→</span>
         </Link>
       </div>
-
-      {/* PUBLIKASI */}
-      <section className="panel dashboard-publish-card">
-        <div className="dashboard-publish-copy">
-          <span className="dashboard-card-label">LANGKAH TERAKHIR</span>
-          <h2>{published ? 'Website kamu sudah online!' : 'Website siap dipublikasikan?'}</h2>
-          <p>
-            {published
-              ? 'Kamu bisa menonaktifkan website kapan saja melalui tombol di bawah.'
-              : 'Publikasikan website agar pelanggan bisa melihat produk dan menghubungimu melalui WhatsApp.'}
-          </p>
-        </div>
-
-        <div className="dashboard-publish-actions">
-          <span className={`notice ${published ? 'success' : ''}`}>
-            {published ? 'Status: Aktif' : 'Status: Belum aktif'}
-          </span>
-
-          <form action={updatePublication}>
-            <input
-              type="hidden"
-              name="status"
-              value={published ? 'unpublished' : 'published'}
-            />
-            <button className="btn" type="submit">
-              {published ? 'Nonaktifkan website' : 'Publikasikan website'}
-            </button>
-          </form>
-        </div>
-      </section>
 
       <div className="dashboard-help-note">
         <strong>Butuh bantuan?</strong>

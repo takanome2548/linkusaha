@@ -9,6 +9,8 @@ import {
   ExternalLink,
   ShieldCheck,
   LogOut,
+  Eye,
+  CreditCard,
 } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/server';
@@ -46,6 +48,11 @@ export default async function DashboardLayout({ children }) {
       icon: LayoutDashboard,
     },
     {
+      href: '/dashboard/pratinjau',
+      label: 'Pratinjau',
+      icon: Eye,
+    },
+    {
       href: '/dashboard/produk',
       label: 'Produk',
       icon: Package,
@@ -54,6 +61,11 @@ export default async function DashboardLayout({ children }) {
       href: '/dashboard/pengaturan',
       label: 'Pengaturan',
       icon: Settings,
+    },
+    {
+      href: '/dashboard/langganan',
+      label: 'Langganan',
+      icon: CreditCard,
     },
     {
       href: '/dashboard/profil',
@@ -76,7 +88,13 @@ export default async function DashboardLayout({ children }) {
           {navigation.map(({ href, label, icon: Icon }) => (
             <Link className="nav-link" href={href} key={href}>
               <Icon size={18} />
-              <span>{label === 'Beranda' ? 'Ringkasan' : label === 'Akun' ? 'Akun saya' : label}</span>
+              <span>
+                {label === 'Beranda'
+                  ? 'Ringkasan'
+                  : label === 'Akun'
+                    ? 'Akun saya'
+                    : label}
+              </span>
             </Link>
           ))}
 
